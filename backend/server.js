@@ -2,14 +2,31 @@ const express = require('express');
 const connectDB = require('./config/database');
 const cors = require('cors');
 require('dotenv').config();
+const colors = require('colors');
 
 const app = express();
-connectDB();
+
+connectDB().catch(err => {
+    console.log("Error: Failed to connect to MongoDB. ".red, err);
+    process.exit(1);
+});
+
+
 
 app.use(express.json({ extended: false }));
 app.use(cors());
- //app.use('/api/auth', require('./routes/authRoutes'));
 
-const PORT = process.env.PORT || 5001 ||5002;
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+const PORT = process.env.PORT || 5001;
+
+
+const server = app.listen(PORT, () => {
+    console.log(`Server started on port ${PORT}.`.green);
+});
+
+process.on('SIGINT', () => {
+    server.close(() => {
+        console.log("Server closed gracefully.".blue);
+        process.exit(0);
+    });
+});
